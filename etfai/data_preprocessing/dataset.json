@@ -1,0 +1,151 @@
+{
+    "HSI":
+    {
+        "symbol": "^HSI",
+        "variable": [
+            1,
+            2,
+            8,
+            3,
+            4,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16
+        ],
+        "target": [
+            1,
+            2,
+            3,
+            4
+        ],
+        "source": "yfinance"
+    },
+
+    "CSI300": {
+        "symbol": "000300.SS",
+        "variable": [
+            1,
+            2,
+            8,
+            3,
+            4,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16
+        ],
+        "source": "q.stock.sohu.com"
+    },
+    "SSE50": {
+        "symbol": "000001.SS",
+        "variable": [
+            1,
+            2,
+            8,
+            3,
+            4
+        ],
+        "source": "cn.investing.com"
+    },
+    "NASDAQ": {
+        "symbol": "^IXIC",
+        "variable": [
+            1,
+            2,
+            8,
+            4
+        ],
+        "source": "yfinance"
+    },
+    "S&P500": {
+        "symbol": "^GSPC",
+        "variable": [
+            1,
+            2,
+            8,
+            4
+        ],
+        "source": "yfinance"
+    },
+    "VIX": {
+        "symbol": "^VIX",
+        "variable": [
+            1,
+            2,
+            8,
+            4
+        ],
+        "source": "yfinance"
+    },
+    "iPath S&P GSCI Total Return Index": {
+        "symbol": "GSP",
+        "variable": [
+            1,
+            2,
+            8,
+            3,
+            4
+        ],
+        "source": "yfinance"
+    },
+    "SPDR Gold Shares":{
+        "symbol": "GLD",
+        "variable": [
+            1,
+            2,
+            8,
+            3,
+            4
+        ],
+        "source": "yfinance"
+    },
+    "USD_CNY":{
+        "symbol": "USDCNY=X",
+        "variable": [
+            1,
+            2,
+            8,
+            3,
+            4
+        ],
+        "source": "yfinance"
+    },
+    "USD_HKD":{
+        "symbol": "USDHKD=X",
+        "variable": [
+            1,
+            2,
+            8,
+            3,
+            4
+        ],
+        "source": "yfinance"
+    },
+    "HKD_CNY":{
+        "symbol": "HKDCNY=X",
+        "variable": [
+            1,
+            2,
+            8,
+            3,
+            4
+        ],
+        "source": "yfinance"
+    },
+    "HIBOR":{
+        "symbol": "HIBOR",
+        "variable": [
+            8
+        ],
+        "source": "HKMA"     
+    }
+}
