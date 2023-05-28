@@ -4,37 +4,47 @@ import yfinance as yf
 import pandas as pd
 import numpy as np
 from pathlib import Path
+from glob import glob
+from sklearn.preprocessing import LabelEncoder
 
 class Indicators:
-    INTRADAY_RTN = 1
-    OVERNIGHT_RTN = 2
-    DAILY_RTN = 8
-    INTRADAY_OVERNIGHT_RTN_DIFF = 3
-    RTN_RANGE = 4
+    INTRADAY_RET = 1
+    OVERNIGHT_RET = 2
+    DAILY_RET = 8
+    INTRADAY_OVERNIGHT_RET_DIFF = 3
+    RET_RANGE = 4
     INTRADAY_MOM = 5
     OVERNIGHT_MOM = 6
     INTRADAY_OVERNIGHT_MOM_DIFF = 7
-    STO_K = 9
-    DISC_STO_K_1 = 10
-    DISC_STO_K_3 = 11
+    STOCH_K = 9
+    DISC_STOCH_K_1 = 10
+    DISC_STOCH_K_3 = 11
     MACD = 12
     DISC_MACD_1 = 13
     DISC_MACD_9 = 14
     RSI = 15
-    DISC_RSI = 16
+    DISC_RSI_TER = 16
+    DISC_RSI_BI = 17
+    DISC = {10:9, 11:9, 13:12, 14:12, 16:15, 17:15}
 
     @classmethod
-    def calculate_indicator(cls, data, indicator):
+    def is_discrete(cls, indicator):
+        if indicator in cls.DISC:
+            return True
+        return False
+
+    @classmethod
+    def calculate_indicator(cls, indicator, data=None, raw=None):
         # check indicator value and calculate corresponding indicator
-        if indicator == cls.INTRADAY_RTN:
+        if indicator == cls.INTRADAY_RET:
             return cls.intraday_ret(data)
-        elif indicator == cls.OVERNIGHT_RTN:
+        elif indicator == cls.OVERNIGHT_RET:
             return cls.overnight_ret(data)
-        elif indicator == cls.DAILY_RTN:
+        elif indicator == cls.DAILY_RET:
             return cls.daily_ret(data)
-        elif indicator == cls.INTRADAY_OVERNIGHT_RTN_DIFF:
+        elif indicator == cls.INTRADAY_OVERNIGHT_RET_DIFF:
             return cls.intraday_overnight_ret_diff(data)
-        elif indicator == cls.RTN_RANGE:
+        elif indicator == cls.RET_RANGE:
             return cls.ret_range(data)
         elif indicator == cls.INTRADAY_MOM:
             df = data.join(cls.intraday_ret(data))
@@ -48,22 +58,24 @@ class Indicators:
             df = data.join(cls.overnight_ret(data))
             overn_mon = cls.momentum(df, 1)
             return intra_mom - overn_mon
-        elif indicator == cls.STO_K:
+        elif indicator == cls.STOCH_K:
             return cls.stoch_k(data)
-        elif indicator == cls.DISC_STO_K_1:
-            return cls.disc_stoch_k_1(data, 1)
-        elif indicator == cls.DISC_STO_K_3:
-            return cls.disc_stoch_k_3(data, 3)
+        elif indicator == cls.DISC_STOCH_K_1:
+            return cls.disc_stoch_k_1(data, 1, stoch_k_n=raw)
+        elif indicator == cls.DISC_STOCH_K_3:
+            return cls.disc_stoch_k_3(data, 3, stoch_k_n=raw)
         elif indicator == cls.MACD:
             return cls.macd(data)
         elif indicator == cls.DISC_MACD_1:
-            return cls.disc_macd_1(data, 1)
+            return cls.disc_macd_1(data, 1, macd=raw)
         elif indicator == cls.DISC_MACD_9:
-            return cls.disc_macd_9(data, 9)
+            return cls.disc_macd_9(data, 9, macd=raw)
         elif indicator == cls.RSI:
             return cls.rsi(data)
-        elif indicator == cls.DISC_RSI:
-            return cls.disc_rsi_ter(data)
+        elif indicator == cls.DISC_RSI_TER:
+            return cls.disc_rsi_ter(data, rsi=raw)
+        elif indicator == cls.DISC_RSI_BI:
+            return cls.disc_rsi_bi(data, rsi=raw)
         else:
             return None
 
@@ -100,13 +112,15 @@ class Indicators:
         return pd.Series((df['Close'] - low_n) / (high_n - low_n), name='stoch_k')
 
     @classmethod
-    def disc_stoch_k_1(cls, df, n=14):
-        stoch_k_n = cls.stoch_k(df, n)
+    def disc_stoch_k_1(cls, df=None, n=14, stoch_k_n=None):
+        if stoch_k_n is None: 
+            stoch_k_n = cls.stoch_k(df, n)
         return pd.Series((stoch_k_n - stoch_k_n.shift(1)).apply(lambda x: 1 if x > 0 else 0), name='disc_stoch_k_1')
 
     @classmethod
-    def disc_stoch_k_3(cls, df, n=14):
-        stoch_k_n = cls.stoch_k(df, n)
+    def disc_stoch_k_3(cls, df=None, n=14, stoch_k_n=None):
+        if stoch_k_n is None:
+            stoch_k_n = cls.stoch_k(df, n)
         stoch_k_n_3 = stoch_k_n.rolling(3).mean()
         return pd.Series((stoch_k_n - stoch_k_n_3).apply(lambda x: 1 if x > 0 else 0), name='disc_stoch_k_3')
 
@@ -117,15 +131,17 @@ class Indicators:
         return pd.Series(ema_fast - ema_slow, name='macd')
 
     @classmethod
-    def disc_macd_1(cls, df, n_fast=12, n_slow=26):
-        macd_line = cls.macd(df, n_fast, n_slow)
-        return pd.Series((macd_line - macd_line.shift(1)).apply(lambda x: 1 if x > 0 else 0), name='disc_macd_1')
+    def disc_macd_1(cls, df=None, n_fast=12, n_slow=26, macd=None):
+        if macd is None:
+            macd = cls.macd(df, n_fast, n_slow)
+        return pd.Series((macd - macd.shift(1)).apply(lambda x: 1 if x > 0 else 0), name='disc_macd_1')
 
     @classmethod
-    def disc_macd_9(cls, df, n_fast=12, n_slow=26):
-        macd_line = cls.macd(df, n_fast, n_slow)
-        macd_signal = macd_line.ewm(span=9, min_periods=9).mean()
-        return pd.Series((macd_line - macd_signal).apply(lambda x: 1 if x > 0 else 0), name='disc_macd_9')
+    def disc_macd_9(cls, df=None, n_fast=12, n_slow=26, macd=None):
+        if macd is None:
+            macd = cls.macd(df, n_fast, n_slow)
+        macd_signal = macd.ewm(span=9, min_periods=9).mean()
+        return pd.Series((macd - macd_signal).apply(lambda x: 1 if x > 0 else 0), name='disc_macd_9')
 
     @classmethod
     def rsi(cls, df, period=14):
@@ -139,14 +155,16 @@ class Indicators:
         return pd.Series(rsi, name='rsi')
 
     @classmethod
-    def disc_rsi_bi(cls, df, period=14):
-        rsi = cls.rsi(df, period)
+    def disc_rsi_bi(cls, df=None, period=14, rsi=None):
+        if rsi is None:
+            rsi = cls.rsi(df, period)
         discrete_rsi = np.where(rsi <= 30, 'oversold', 'overbought')
         return pd.Series(discrete_rsi, name='disc_rsi_bi')
 
     @classmethod
-    def disc_rsi_ter(cls, df, period=14):
-        rsi = cls.rsi(df, period)
+    def disc_rsi_ter(cls, df=None, period=14, rsi=None):
+        if rsi is None:
+            rsi = cls.rsi(df, period)
         bins = [-np.inf, 30, 70, np.inf]
         labels = ['oversold', 'neutral', 'overbought']
         discrete_rsi = pd.cut(rsi, bins=bins, labels=labels)
@@ -254,4 +272,44 @@ class DataFetcher:
                 
                 df_target = df_target[(df_target.index >= pd.to_datetime(self.eff_date)) & (df_target.index <= pd.to_datetime(self.end_date))]
                 df_target.to_csv(f'{self.data_dir}/target/{ticker}.csv')
+
+def load_data(dataset_dir, prefix=False):
+    files = glob(f'{Path(dataset_dir)}/*.csv')
+    dfs = []
+    if prefix:
+        for f in files:
+            indicator = Path(f).stem.replace(' ','').replace('_', '2')
+            df = pd.read_csv(f, index_col='Date', parse_dates=True)
+            df.columns = [f'{indicator}_{col}' for col in df.columns]
+            dfs.append(df)
+    else:
+        for f in files:
+            df = pd.read_csv(f, index_col='Date', parse_dates=True)
+            dfs.append(df)
+    return dfs
+
+def fill_missing(df):
+    df.interpolate(method='linear', inplace=True)
+
+    # recalculate discrete indicators after interploation
+    for col in df.columns:
+        ticker, indicator = col.split('_', 1)
+        indicator = getattr(Indicators, indicator.upper())
+        if indicator in Indicators.DISC:
+            v = Indicators.DISC[indicator]
+            for attr_name in dir(Indicators):
+                attr_v = getattr(Indicators, attr_name)
+                if attr_v == v:
+                    raw = df[f'{ticker}_{attr_name.lower()}']
+            df[col] = Indicators.calculate_indicator(indicator, raw=raw)
             
+    return df
+
+def one_hot_encode(df):
+    label_encoder = LabelEncoder()
+    for col in df.columns:
+        _, indicator = col.split('_', 1)
+        indicator = getattr(Indicators, indicator.upper())
+        if indicator in Indicators.DISC:
+            df[col] = label_encoder.fit_transform(df[col])
+    return df

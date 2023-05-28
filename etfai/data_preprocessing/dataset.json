@@ -108,7 +108,7 @@
         ],
         "source": "yfinance"
     },
-    "USD_CNY":{
+    "USD2CNY":{
         "symbol": "USDCNY=X",
         "variable": [
             1,
@@ -119,7 +119,7 @@
         ],
         "source": "yfinance"
     },
-    "USD_HKD":{
+    "USD2HKD":{
         "symbol": "USDHKD=X",
         "variable": [
             1,
@@ -130,7 +130,7 @@
         ],
         "source": "yfinance"
     },
-    "HKD_CNY":{
+    "HKD2CNY":{
         "symbol": "HKDCNY=X",
         "variable": [
             1,
