@@ -1,0 +1,13 @@
+,0
+HSI,yfinance
+CSI300,q.stock.sohu.com
+SSE50,cn.investing.com
+NASDAQ,yfinance
+S&P500,yfinance
+VIX,yfinance
+iPath S&P GSCI Total Return Index,yfinance
+SPDR Gold Shares,yfinance
+USD2CNY,yfinance
+USD2HKD,yfinance
+HKD2CNY,yfinance
+HIBOR,HKMA

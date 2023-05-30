@@ -204,7 +204,7 @@ class Target:
     
     @classmethod
     def open_to_close(cls, data):
-        return pd.Series((data['Close'] - data['Open'].shift(1)) / data['Open'].shift(1), name='OC')
+        return pd.Series((data['Close'] - data['Open']) / data['Open'], name='OC')
     
     @classmethod
     def close_to_open(cls, data):
@@ -256,7 +256,7 @@ class DataFetcher:
 
             vars_ = attr['variable']
             for var in vars_:
-                df_var = df_var.join(Indicators.calculate_indicator(df, var))
+                df_var = df_var.join(Indicators.calculate_indicator(data=df, indicator=var))
             df_var = df_var[(df_var.index >= pd.to_datetime(self.eff_date)) & (df_var.index <= pd.to_datetime(self.end_date))]
             df_var.to_csv(f'{self.data_dir}/variable/{ticker}.csv')
 

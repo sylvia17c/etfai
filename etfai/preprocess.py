@@ -51,10 +51,10 @@ variables = one_hot_encode(variables)
 
 target = load_data('./etfai/data_preprocessing/data/target/', prefix=True)
 target = pd.concat(target, axis=1)
-target = target[['HSI_OC_ter_0.005']]
+target = target[['HSI_OO_ter_0.005']]
 label_encoder = LabelEncoder()
 target_encoded = label_encoder.fit_transform(target)
-dataset = variables.join(target['HSI_OC_ter_0.005'], how='right')
+dataset = variables.join(target['HSI_OO_ter_0.005'], how='right')
 RF_importance = RFImportance(dataset.iloc[:,:-1], dataset.iloc[:,-1])
 RF_importance.to_csv('./etfai/data_preprocessing/result/RFImportance.csv')
 top_ten = RF_importance.index[:10]
@@ -63,3 +63,4 @@ extracted_dataset = dataset[list(top_ten)+[dataset.columns[-1]]]
 dataset_dir = Path('./etfai/data_preprocessing/dataset')
 dataset_dir.mkdir(parents=True, exist_ok=True)
 extracted_dataset.to_csv(f'{dataset_dir}/{extracted_dataset.columns[-1]}.csv')
+pass
